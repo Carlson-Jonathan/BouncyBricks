@@ -1,0 +1,25 @@
+* {
+    margin: 0;
+}
+
+body {
+    overflow: hidden;
+}
+
+canvas {
+    border:1px solid #d3d3d3;
+    background-color: lightblue;
+}
+
+p {
+    background-color: darkgreen;
+    width: 100%;
+    padding: 20px;
+    text-align: center;
+    color: yellow;
+    font-size: 3em;
+}
+
+#infect {
+    display: none;
+}
