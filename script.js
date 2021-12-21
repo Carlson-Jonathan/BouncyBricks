@@ -1,26 +1,36 @@
-let screenWidth = 1024;
+let screenWidth = 1500;
 let screenHeight = 768;
-let totalSquares = 100;
-let maxSquareSize = 15;
-let speedLimit = 8;
+let totalSquares = 200;
+let maxSquareSize = 10;
+let speedLimit = 7;
 
-let squares = [];
-let mode = {"virusMode" : false, "battleMode" : 0}
+
 let virusMode = true;
-let virusIsAlive = false;
+let virusDuration = 2000;
+
 let battleMode = true;
 
+
+let virusIsAlive = false;
+
+let squares = [];
 let colors = ["blue", "green", "orange", "purple", "black", "cyan", "grey", "teal", "violet", "pink",
                 "coral", "chartreuse", "darkgreen", "goldenrod", "khaki", "magenta", "olive", "rebeccapurple", "yellow", "maroon"];
 
-if(virusMode) document.getElementById("infect").style.display = "block";
+if(virusMode) {
+    let virusButton = document.getElementById("infect");
+    virusButton.style.display = "block";
+    var buttonMargin = (screenWidth / 2) - 75;
+    var bm = buttonMargin.toString() + "px";
+    virusButton.style.marginLeft = bm;    
+}
+
 /*--------------------------------------------------------------------------------------------*/
 
 function startGame() {
     generateSquares();
     myGameArea.start();
 }
-
 
 /*--------------------------------------------------------------------------------------------*/
 
@@ -200,13 +210,13 @@ function exchangeTrajectories(square1, square2) {
     let sq2YDirection = Math.sign(square2.speedY);
     
     if(topOrBottom) {
-        let y = square1.speedY;// + (Math.sign(square1.speedY) * 1);
-        square1.speedY = square2.speedY;// + (Math.sign(square2.speedX) * 1);
+        let y = square1.speedY; + (Math.sign(square1.speedY) * 1);
+        square1.speedY = square2.speedY;
         square2.speedY = y;
     } 
     else if(leftOrRight) {
-        let x = square1.speedX;// + (Math.sign(square1.speedX) * 1);
-        square1.speedX = square2.speedX;// + (Math.sign(square2.speedX) * 1);
+        let x = square1.speedX;
+        square1.speedX = square2.speedX;
         square2.speedX = x;
     }
     else {
@@ -259,11 +269,9 @@ function performSquareCollision(square1, square2) {
     
     exchangeTrajectories(square1, square2);
     
-    if(virusMode) {
-        if(virusIsAlive) {
+    if(virusMode) 
+        if(virusIsAlive) 
             setVirusMode(square1, square2);
-        }
-    }
     
     if(battleMode)
         setBattleMode(square1, square2);
@@ -275,57 +283,61 @@ function spawnVirus() {
     squares[0].isVirus = true;
     squares[0].color = "red";
     virusIsAlive = true;
+    infectionResult(squares[0]);
 }
 
 /*--------------------------------------------------------------------------------------------*/
 
 function setVirusMode(square1, square2) {
 
-    if(square1.isVirus) infectionResult(square1);
-    if(square2.isVirus) infectionResult(square2);
-
-    if(square1.isVirus && square2.isVirus)
-        return;
-
-    if(square2.isVirus) {
+    if(square1.isVirus && square2.isVirus) {}
+    else if(square2.isVirus) {
         square1.isVirus = true;
         square1.color = square2.color;                
+        infectionResult(square1);
     }
-
-    if(square1.isVirus) {
+    else if(square1.isVirus) {
         square2.isVirus = true;
         square2.color = square1.color;
+        infectionResult(square2);
     }
 }
 
 /*--------------------------------------------------------------------------------------------*/
 
-let dth = 0, recov = 0;
 function infectionResult(square) {
+    console.log(square.id + " infected");
     setTimeout(function() {
         let x = generateRandomNumber(3);
-        if(x == 3) {
-            dth++;
-            console.log("Death! : " + dth);
+        if(x == 3) 
             squareDied(square);
-        }
-        else {
-            recov++;
-            console.log("Recovery : " + recov);
+        else 
             recovery(square);
-        }
-    }, 1500);
+    }, virusDuration);
 }
 
 /*--------------------------------------------------------------------------------------------*/
 
 function squareDied(square) {
-    squares.splice(square.id, 1);
+    const index = findCurrentSquareIndex(square);
+    console.log("Square ID " + square.id + " died! (squares[" + index + "])");
+    squares.splice(index, 1);
+}
+
+/*--------------------------------------------------------------------------------------------*/
+
+function findCurrentSquareIndex(square) {
+    for(let i = 0; i < squares.length; i++) {
+        if(squares[i].id == square.id)
+            return i;
+    }
+    return 88;
 }
 
 /*--------------------------------------------------------------------------------------------*/
 
 function recovery(square) {
+    console.log("Square ID " + square.id + " recovered!");    
     square.color = colors[generateRandomNumber(colors.length - 1)];
     square.isVirus = false;
 }

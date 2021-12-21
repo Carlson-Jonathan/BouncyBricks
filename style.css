@@ -22,4 +22,9 @@ p {
 
 #infect {
     display: none;
+    color: red;
+    font-weight: 800;
+    border: solid red 2px;
+    border-radius: 7px;
+    width: 150px;
 }
