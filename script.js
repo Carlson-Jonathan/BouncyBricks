@@ -4,7 +4,7 @@ let totalSquares = 200;
 let maxSquareSize = 10;
 let speedLimit = 7;
 
-
+// hi
 let virusMode = true;
 let virusDuration = 2000;
 
