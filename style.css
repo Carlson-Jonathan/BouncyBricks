@@ -27,4 +27,13 @@ p {
     border: solid red 2px;
     border-radius: 7px;
     width: 150px;
+    background-color: pink;
+}
+
+#reload {
+    color: darkgreen;
+    border: solid darkgreen 2px;
+    border-radius: 7px;
+    width: 100px;
+    display: block;
 }

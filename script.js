@@ -1,29 +1,42 @@
-let screenWidth = 1500;
+let screenWidth = 1024;
 let screenHeight = 768;
-let totalSquares = 200;
-let maxSquareSize = 10;
-let speedLimit = 7;
-
+let totalSquares = 2;
+let maxSquareSize = 60;
+let minSquareSize = 40;
+let speedLimit = 3;
 
 let virusMode = true;
-let virusDuration = 2000;
+let battleMode = false;
+let asteriodsMode = false;
 
-let battleMode = true;
-
-
-let virusIsAlive = false;
+// Virus Mode Options
+let virusDuration = 3000; // Seconds
+let chanceOfDeath = 5;   // 1 in X
 
 let squares = [];
 let colors = ["blue", "green", "orange", "purple", "black", "cyan", "grey", "teal", "violet", "pink",
-                "coral", "chartreuse", "darkgreen", "goldenrod", "khaki", "magenta", "olive", "rebeccapurple", "yellow", "maroon"];
+"coral", "chartreuse", "darkgreen", "goldenrod", "khaki", "magenta", "olive", "rebeccapurple", "yellow", "maroon"];
 
+let virusIsAlive = false;
 if(virusMode) {
+    screenWidth = 1024;
+    screenHeight = 768; 
     let virusButton = document.getElementById("infect");
     virusButton.style.display = "block";
     var buttonMargin = (screenWidth / 2) - 75;
     var bm = buttonMargin.toString() + "px";
-    virusButton.style.marginLeft = bm;    
+    virusButton.style.marginLeft = bm; 
+    totalSquares = 100;
+    minSquareSize = 10;
+    maxSquareSize = 25;  
+    speedLimit = 7;
 }
+
+if(asteriodsMode){
+    maxSquareSize = 100;
+    totalSquares = 4;
+}
+
 
 /*--------------------------------------------------------------------------------------------*/
 
@@ -55,6 +68,7 @@ function runGameLoop() {
     animateSquares();
     setWallReactionType();
     scanForAllowableCollisions();
+    removeDeadSquares();
 }
 
 /*--------------------------------------------------------------------------------------------*/
@@ -63,12 +77,13 @@ function square(id, width, height, color, x, y) {
     this.id = id;
     this.isStillOverlapping = false;
     this.isVirus = false;
+    this.isDead = false;
     this.color = color;
     this.width = width;
     this.height = height;
     this.mass = width % 3;
-    this.speedX = generateRandomNumber(speedLimit) - generateRandomNumber(speedLimit);
-    this.speedY = generateRandomNumber(speedLimit) - generateRandomNumber(speedLimit);
+    this.speedX = generateRandomNumber(speedLimit);
+    this.speedY = generateRandomNumber(speedLimit);
     this.x = x;
     this.y = y;   
     
@@ -89,10 +104,10 @@ function square(id, width, height, color, x, y) {
 function generateSquares() {
     let squareWidth, screenXPos, screenYPos;
     for(let i = 0; i < totalSquares; i++) {
-        screenYPos = generateRandomNumber(screenHeight - 50);
-        squareWidth = generateRandomNumber(maxSquareSize);
-        screenXPos = generateRandomNumber(screenWidth - 50);
-        squares.push(new square(i, squareWidth + 15, squareWidth + 15, colors[generateRandomNumber(colors.length - 1)], screenXPos, screenYPos));
+        screenYPos = generateRandomUnsignedNumber(screenHeight - 50);
+        squareWidth = generateRandomUnsignedNumber(maxSquareSize);
+        screenXPos = generateRandomUnsignedNumber(screenWidth - 50);
+        squares.push(new square(i, squareWidth + minSquareSize, squareWidth + minSquareSize, colors[generateRandomUnsignedNumber(colors.length - 1)], screenXPos, screenYPos));
         squares[0].isVirus = true;
     }
 }
@@ -120,9 +135,8 @@ function setWallReactionType() {
 
 /*--------------------------------------------------------------------------------------------*/
 
-function printData(square) {
+function printSquareData(square) {
     console.log(square.width + ": {" + square.x + ", " + square.y + "}");
-    console.log("Area: {" + myGameArea.canvas.width + ", " + myGameArea.canvas.height + "}");
 }
 
 /*--------------------------------------------------------------------------------------------*/
@@ -233,9 +247,9 @@ function scanForAllowableCollisions() {
         for(let j = 0; j < i; j++) {
             if(detectOverlap(squares[i], squares[j])) {
                 if(!(squares[i].isStillOverlapping && squares[j].isStillOverlapping)) {
-                    performSquareCollision(squares[i], squares[j]);
                     squares[i].isStillOverlapping = true;
                     squares[j].isStillOverlapping = true;
+                    performSquareCollision(squares[i], squares[j]);
                 }
             }
         }
@@ -259,8 +273,24 @@ function resetOverlapping(square) {
 
 /*--------------------------------------------------------------------------------------------*/
 
-function generateRandomNumber(max) {
+function removeDeadSquares() {
+    for(let i = squares.length - 1; i >= 0; i--) {
+        if(squares[i].isDead) {
+            squareDied(squares[i]);
+        }
+    }
+}
+
+/*--------------------------------------------------------------------------------------------*/
+
+function generateRandomUnsignedNumber(max) {
     return Math.floor(Math.random() * max) + 1;
+}
+
+/*--------------------------------------------------------------------------------------------*/
+
+function generateRandomNumber(max) {
+    return generateRandomUnsignedNumber(max) - generateRandomUnsignedNumber(max);
 }
 
 /*--------------------------------------------------------------------------------------------*/
@@ -269,12 +299,46 @@ function performSquareCollision(square1, square2) {
     
     exchangeTrajectories(square1, square2);
     
-    if(virusMode) 
-        if(virusIsAlive) 
-            setVirusMode(square1, square2);
-    
-    if(battleMode)
-        setBattleMode(square1, square2);
+    if(virusMode) if(virusIsAlive) setVirusMode(square1, square2);
+    if(battleMode) setBattleMode(square1, square2);
+    if(asteriodsMode) setAsteroidsMode(square1, square2);
+}
+
+/*--------------------------------------------------------------------------------------------*/
+// Something is wrong will killing squares. Squares seem to die at random when there is
+// a collision. It is almost like the wrong index is being referenced when killing them.
+function setAsteroidsMode(square1, square2) {
+
+    if(square1.width > 5) {
+        breakAppart(square1);
+    }
+        
+    if(square2.width > 20) {
+        breakAppart(square2);
+    }
+
+    square1.isDead = true;
+    square2.isDead = true;
+}
+
+/*--------------------------------------------------------------------------------------------*/
+
+function breakAppart(sq) {
+
+    let w = Math.floor(sq.width * 0.7);
+    let col = sq.color;
+    let x = sq.x;
+    let y = sq.y;
+    let newAsteriods = 2;
+    let xDir = Math.sign(sq.speedX);
+    let yDir = Math.sign(sq.speedY);
+
+    while (newAsteriods--) {
+        squares.push(new square(squares.length, w, w, col, x, y));
+        squares[squares.length - 1].speedX = generateRandomNumber(4);
+        squares[squares.length - 1].speedY = generateRandomNumber(4);
+        squares[squares.length - 1].isStillOverlapping = true;
+    }
 }
 
 /*--------------------------------------------------------------------------------------------*/
@@ -306,11 +370,10 @@ function setVirusMode(square1, square2) {
 /*--------------------------------------------------------------------------------------------*/
 
 function infectionResult(square) {
-    console.log(square.id + " infected");
     setTimeout(function() {
-        let x = generateRandomNumber(3);
-        if(x == 3) 
-            squareDied(square);
+        let x = generateRandomUnsignedNumber(chanceOfDeath);
+        if(x == chanceOfDeath) 
+            square.isDead = true;
         else 
             recovery(square);
     }, virusDuration);
@@ -319,9 +382,9 @@ function infectionResult(square) {
 /*--------------------------------------------------------------------------------------------*/
 
 function squareDied(square) {
-    const index = findCurrentSquareIndex(square);
-    console.log("Square ID " + square.id + " died! (squares[" + index + "])");
-    squares.splice(index, 1);
+    const i = findCurrentSquareIndex(square);
+    // console.log("Killing " + square.color + " square " + square.id + " - square[" + i + "]");
+    squares.splice(i, 1);
 }
 
 /*--------------------------------------------------------------------------------------------*/
@@ -331,23 +394,23 @@ function findCurrentSquareIndex(square) {
         if(squares[i].id == square.id)
             return i;
     }
+    console.log("ERROR: Index of square " + square.id + " not found!");
     return 88;
 }
 
 /*--------------------------------------------------------------------------------------------*/
 
 function recovery(square) {
-    console.log("Square ID " + square.id + " recovered!");    
-    square.color = colors[generateRandomNumber(colors.length - 1)];
+    square.color = colors[generateRandomUnsignedNumber(colors.length - 1)];
     square.isVirus = false;
 }
 
 /*--------------------------------------------------------------------------------------------*/
 
 function setBattleMode(square1, square2) {
-    let x = generateRandomNumber(2);
+    let x = generateRandomUnsignedNumber(2);
     if(x == 1)
-    square1.color = square2.color;
+        square1.color = square2.color;
     else    
-    square2.color = square1.color;
+        square2.color = square1.color;
 }
