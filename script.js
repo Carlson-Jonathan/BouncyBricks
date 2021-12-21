@@ -1,6 +1,6 @@
-let screenWidth = 800;
-let screenHeight = 600;
-let totalSquares = 10;
+let screenWidth = 1024;
+let screenHeight = 768;
+let totalSquares = 100;
 let maxSquareSize = 15;
 let speedLimit = 8;
 
@@ -13,6 +13,7 @@ let battleMode = true;
 let colors = ["blue", "green", "orange", "purple", "black", "cyan", "grey", "teal", "violet", "pink",
                 "coral", "chartreuse", "darkgreen", "goldenrod", "khaki", "magenta", "olive", "rebeccapurple", "yellow", "maroon"];
 
+if(virusMode) document.getElementById("infect").style.display = "block";
 /*--------------------------------------------------------------------------------------------*/
 
 function startGame() {
@@ -20,18 +21,6 @@ function startGame() {
     myGameArea.start();
 }
 
-/*--------------------------------------------------------------------------------------------*/
-
-function generateSquares() {
-    let squareWidth, screenXPos, screenYPos;
-    for(let i = 0; i < totalSquares; i++) {
-        screenYPos = generateRandomNumber(screenHeight - 50);
-        squareWidth = generateRandomNumber(maxSquareSize);
-        screenXPos = generateRandomNumber(screenWidth - 50);
-        squares.push(new square(squareWidth + 15, squareWidth + 15, colors[generateRandomNumber(colors.length - 1)], screenXPos, screenYPos));
-        squares[0].isVirus = true;
-    }
-}
 
 /*--------------------------------------------------------------------------------------------*/
 
@@ -51,7 +40,17 @@ var myGameArea = {
 
 /*--------------------------------------------------------------------------------------------*/
 
-function square(width, height, color, x, y) {
+function runGameLoop() {
+    myGameArea.clear();
+    animateSquares();
+    setWallReactionType();
+    scanForAllowableCollisions();
+}
+
+/*--------------------------------------------------------------------------------------------*/
+
+function square(id, width, height, color, x, y) {
+    this.id = id;
     this.isStillOverlapping = false;
     this.isVirus = false;
     this.color = color;
@@ -77,11 +76,15 @@ function square(width, height, color, x, y) {
 
 /*--------------------------------------------------------------------------------------------*/
 
-function runGameLoop() {
-    myGameArea.clear();
-    animateSquares();
-    setWallReactionType();
-    scanForAllowableCollisions();
+function generateSquares() {
+    let squareWidth, screenXPos, screenYPos;
+    for(let i = 0; i < totalSquares; i++) {
+        screenYPos = generateRandomNumber(screenHeight - 50);
+        squareWidth = generateRandomNumber(maxSquareSize);
+        screenXPos = generateRandomNumber(screenWidth - 50);
+        squares.push(new square(i, squareWidth + 15, squareWidth + 15, colors[generateRandomNumber(colors.length - 1)], screenXPos, screenYPos));
+        squares[0].isVirus = true;
+    }
 }
 
 /*--------------------------------------------------------------------------------------------*/
@@ -257,33 +260,74 @@ function performSquareCollision(square1, square2) {
     exchangeTrajectories(square1, square2);
     
     if(virusMode) {
-        document.getElementById("infect").style.display = "block";
-        if(virusIsAlive)
+        if(virusIsAlive) {
             setVirusMode(square1, square2);
+        }
     }
     
     if(battleMode)
-    setBattleMode(square1, square2);
+        setBattleMode(square1, square2);
 }
 
 /*--------------------------------------------------------------------------------------------*/
 
-function doSomething() {
+function spawnVirus() {
+    squares[0].isVirus = true;
+    squares[0].color = "red";
     virusIsAlive = true;
 }
 
 /*--------------------------------------------------------------------------------------------*/
 
 function setVirusMode(square1, square2) {
-    if(square1.isVirus) {
-        square2.isVirus = true;
-        square2.color = "red";
-    }
-    
+
+    if(square1.isVirus) infectionResult(square1);
+    if(square2.isVirus) infectionResult(square2);
+
+    if(square1.isVirus && square2.isVirus)
+        return;
+
     if(square2.isVirus) {
         square1.isVirus = true;
         square1.color = square2.color;                
     }
+
+    if(square1.isVirus) {
+        square2.isVirus = true;
+        square2.color = square1.color;
+    }
+}
+
+/*--------------------------------------------------------------------------------------------*/
+
+let dth = 0, recov = 0;
+function infectionResult(square) {
+    setTimeout(function() {
+        let x = generateRandomNumber(3);
+        if(x == 3) {
+            dth++;
+            console.log("Death! : " + dth);
+            squareDied(square);
+        }
+        else {
+            recov++;
+            console.log("Recovery : " + recov);
+            recovery(square);
+        }
+    }, 1500);
+}
+
+/*--------------------------------------------------------------------------------------------*/
+
+function squareDied(square) {
+    squares.splice(square.id, 1);
+}
+
+/*--------------------------------------------------------------------------------------------*/
+
+function recovery(square) {
+    square.color = colors[generateRandomNumber(colors.length - 1)];
+    square.isVirus = false;
 }
 
 /*--------------------------------------------------------------------------------------------*/
