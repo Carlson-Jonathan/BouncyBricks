@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body onload="startGame()">
+
+        <ul id="colorList">
+            <li class="color" style="background-color: white">Total: <span id="total">0</span></li>                                                        
+            <li class="color">Blue:   <span id="blue">0 </span></li>
+            <li class="color">Green:  <span id="green">0 </span></li>
+            <li class="color">Orange: <span id="orange">0</span></li>  
+            <li class="color">Purple: <span id="purple">0</span></li>
+            <li class="color">Black:  <span id="black">0</span></li>
+            <li class="color">Cyan:   <span id="cyan">0</span></li>               
+            <li class="color">Grey:   <span id="grey">0</span></li>
+            <li class="color">Teal:   <span id="teal">0</span></li>
+            <li class="color">Violet: <span id="violet">0</span></li> 
+            <li class="color">Pink:   <span id="pink">0</span></li>
+            <li class="color">Coral:  <span id="coral">0</span></li>
+            <li class="color">Chartreuse: <span id="chartreuse">0</span></li> 
+            <li class="color">Darkgreen: <span id="darkgreen">0</span></li>
+            <li class="color">Goldenrod: <span id="goldenrod">0</span></li>
+            <li class="color">Khaki: <span id="khaki">0</span></li>   
+            <li class="color">Magenta: <span id="magenta">0</span></li>
+            <li class="color">Olive: <span id="olive">0</span></li> 
+            <li class="color">Rebpurple: <span id="rebeccapurple">0</span></li>
+            <li class="color">Yellow: <span id="yellow">0</span></li>
+            <li class="color">Maroon: <span id="maroon">0</span></li>   
+            <li class="color">Virus: <span id="red">0</span></li>    
+        </ul>
+        <button id="infect" onclick=spawnVirus()>Drop Virus</button>
+        <button id="reload" onClick="window.location.reload();">Restart</button>
+        <script src="script.js"></script>
+
+    </body>
+</html>

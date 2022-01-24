@@ -1,12 +1,12 @@
-let screenWidth = 1024;
-let screenHeight = 768;
+let screenWidth = 1920;
+let screenHeight = 1050;
 let totalSquares = 2;
 let maxSquareSize = 60;
 let minSquareSize = 40;
 let speedLimit = 3;
 
 let virusMode = true;
-let battleMode = false;
+let battleMode = true;
 let asteriodsMode = false;
 
 // Virus Mode Options
@@ -19,14 +19,12 @@ let colors = ["blue", "green", "orange", "purple", "black", "cyan", "grey", "tea
 
 let virusIsAlive = false;
 if(virusMode) {
-    screenWidth = 1024;
-    screenHeight = 768; 
     let virusButton = document.getElementById("infect");
-    virusButton.style.display = "block";
+    virusButton.style.display = "inline-block";
     var buttonMargin = (screenWidth / 2) - 75;
     var bm = buttonMargin.toString() + "px";
     virusButton.style.marginLeft = bm; 
-    totalSquares = 100;
+    totalSquares = 150;
     minSquareSize = 10;
     maxSquareSize = 25;  
     speedLimit = 7;
@@ -63,12 +61,18 @@ var myGameArea = {
 
 /*--------------------------------------------------------------------------------------------*/
 
+let refersh = 0;
 function runGameLoop() {
     myGameArea.clear();
     animateSquares();
     setWallReactionType();
     scanForAllowableCollisions();
     removeDeadSquares();
+    refersh++;
+    if(refersh > 40) {
+        displayColorQuantities();
+        refersh = 0;
+    }
 }
 
 /*--------------------------------------------------------------------------------------------*/
@@ -107,7 +111,7 @@ function generateSquares() {
         screenYPos = generateRandomUnsignedNumber(screenHeight - 50);
         squareWidth = generateRandomUnsignedNumber(maxSquareSize);
         screenXPos = generateRandomUnsignedNumber(screenWidth - 50);
-        squares.push(new square(i, squareWidth + minSquareSize, squareWidth + minSquareSize, colors[generateRandomUnsignedNumber(colors.length - 1)], screenXPos, screenYPos));
+        squares.push(new square(i, squareWidth + minSquareSize, squareWidth + minSquareSize, colors[generateRandomUnsignedNumber(colors.length) - 1], screenXPos, screenYPos));
         squares[0].isVirus = true;
     }
 }
@@ -413,4 +417,76 @@ function setBattleMode(square1, square2) {
         square1.color = square2.color;
     else    
         square2.color = square1.color;
+}
+
+/*--------------------------------------------------------------------------------------------*/
+
+function sortList() {
+    var geek_list, i, run, li, stop;
+    
+    geek_list = document.getElementById("colorList");
+    
+    run = true;
+    
+    while (run) {
+        run = false;
+        li = geek_list.getElementsByTagName("LI");
+        
+        for (i = 0; i < (li.length - 1); i++) {
+            stop = false;
+            // console.log(parseInt(li[i].childNodes[1].innerHTML));
+            if(isNaN(parseInt(li[i].childNodes[1].innerHTML)))
+                console.log(li[i].innerHTML + "(" + i + ")");
+
+            if(parseInt(li[i].childNodes[1].innerHTML) < 
+                parseInt(li[i + 1].childNodes[1].innerHTML)) {
+                stop = true;
+                break;
+            }
+        }
+
+        if (stop) {
+            li[i].parentNode.insertBefore(
+                    li[i + 1], li[i]);
+
+            run = true;
+        }
+    }
+}
+
+/*--------------------------------------------------------------------------------------------*/
+
+function displayColorQuantities() {
+    let colorValues = {"blue" : 0, "green" : 0, "orange" : 0, "purple" : 0, "black" : 0, 
+                       "cyan" : 0, "grey" : 0, "teal" : 0, "violet" : 0, "pink" : 0, "coral" : 0,
+                       "chartreuse" : 0, "darkgreen" : 0, "goldenrod" : 0, "khaki" : 0, 
+                       "magenta" : 0, "olive" : 0, "rebeccapurple" : 0, "yellow" : 0, "maroon" : 0,
+                       "red": 0};
+
+    squares.forEach(i => colorValues[i.color]++);
+
+    for(let i = 0; i < colors.length; i++) {
+        let colorLine = document.getElementById(colors[i]); 
+        colorLine.parentNode.style.color = colors[i];
+        if(colorValues[colors[i]] == 0) 
+            colorLine.parentNode.style.display = "none";
+        else {
+            colorLine.innerHTML = colorValues[colors[i]];
+            colorLine.parentNode.style.display = "";
+        }
+    };
+
+    let virus = document.getElementById("red");
+    let total = document.getElementById("total");
+
+    virus.innerHTML = colorValues["red"];
+    virus.parentNode.style.color = "red";
+    if(colorValues["red"] == 0)
+        virus.parentElement.style.display = "none";
+    else
+        virus.parentNode.style.display = "";
+
+    total.innerHTML = squares.length;
+
+    sortList();
 }
