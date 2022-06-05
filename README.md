@@ -9,3 +9,5 @@ will find, has an interesting effect. </p>
 <p>Even though this was written recently, the code is very sloppy as I never really bothered 
 to clean it up. I just got it working and ran with it. Just clone and run the .html file in any browser.
 Feel free to mess with any of the variable setting at the beginning of the file. Enjoy!</p>
+<h3>Screen Shot</h3>
+![](screenshot.png)
